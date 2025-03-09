@@ -28,10 +28,11 @@ client = MongoClient(uri, server_api=ServerApi('1'))
 @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
 def homeview(request):
     [...]
-    database = client.get_database("sample_mflix")
-    movies = database.get_collection("movies")
+    database = client.get_database("cmd-f")
+    users = database.get_collection("users")
     # Query for a movie that has the title 'Back to the Future'
-    query = { "title": "Back to the Future" }
-    movie = movies.find_one(query)
-    movie["_id"] = str(movie["_id"])
-    return Response(movie)
+    query = { "phone_number": 6049992837 }
+    user = users.find_one(query)
+    if user:
+        user["_id"] = str(user["_id"])
+    return Response(user)
