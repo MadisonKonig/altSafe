@@ -72,16 +72,13 @@ def create_user():
     return 500
 
 
-# def insert_verification_number():
-#     users = connect_to_database()
-#     print('test')
-#     # print(data)
-#     query = {"phone_number":6049992857}
-#     ver_num = 12345
-#     user = users.find_one_and_update(filter=query, update={'$set':{'verification_number':ver_num}}, return_document=ReturnDocument.AFTER)
-#     if user['verification_number'] == ver_num:
-#         return 200
-#     return 500
+def insert_verification_number(id, otp):
+    users = connect_to_database()
+    query = { "_id": ObjectId(id) }
+    user = users.find_one_and_update(filter=query, update={'$set':{'verification_number':otp}}, return_document=ReturnDocument.AFTER)
+    if user['verification_number'] == otp:
+        return 200
+    return 500
 
 
 
@@ -90,7 +87,7 @@ def verify_verification_number(id, verification_number):
     query = { "_id": ObjectId(id), "verification_number":verification_number }
     user = users.find_one(query)
     if user:
-        update_verified(id)
+        update_verified(id) 
         return 200
     return 500
 
@@ -149,13 +146,14 @@ def check_in():
     return 500
 
 #TODO: end check is pointless. but mvp babbby
-def miss_check_in():
+def miss_check_in(id):
     users = connect_to_database()
-    phone_number = 6039992852
-    query = {"phone_number":phone_number}
-    user = users.find_one_and_update(filter=query, update={'$inc':
-        { "sessions.check_ins_missed": 1 }
-    }, return_document=ReturnDocument.AFTER)
-    if user['sessions']:
-        return 200
-    return 500
+    query = { "_id": ObjectId(id) }
+    try:
+        user = users.find_one_and_update(filter=query, update={'$inc':
+                { "sessions.check_ins_missed": 1 }
+            }, return_document=ReturnDocument.AFTER)
+        
+        return user
+    except Exception as e:
+            raise NotFound(str(e))
