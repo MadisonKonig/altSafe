@@ -45,7 +45,14 @@ def insert_user_data(request):
 
 @api_view(['PUT'])
 @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
-def insert_user_session(request):
+def insert_user_verified(request):
     # use the request data in insert_data() and figure out how to parse it
-    data = insert_session()
+    data = update_verified()
+    return Response(data)
+
+@api_view(['POST'])
+@renderer_classes((TemplateHTMLRenderer, JSONRenderer))
+def create_user_data(request):
+    # use the request data in insert_data() and figure out how to parse it
+    data = create_user()
     return Response(data)

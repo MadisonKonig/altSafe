@@ -37,7 +37,8 @@ def insert_data():
     user = users.find_one_and_update(filter=query, update={})
     return 500
 
-def insert_session():
+#TODO: change insert to update. Cause insert sucks, and it's an update.
+def update_verified():
     users = connect_to_database()
     print('test')
     query = {"phone_number":6049992837} #{'$inc': {'x': 3}}
@@ -45,6 +46,38 @@ def insert_session():
     user["_id"] = str(user["_id"])
     return user
 
+
+#TODO: change insert to update. Cause insert sucks, and it's an update.
+def create_user():
+    users = connect_to_database()
+
+    user = users.insert_one(
+        {
+	        "name":"Bert",
+	        "phone_number":6049992857,
+            "emergency_contacts": [
+                {
+                "contact_order": 1,
+                "name_id": "The Kid",
+                "phone_number": 6047782938
+                }
+            ],
+            "sessions": {
+                "check_ins": [
+                    {
+                        "location":"coords",
+                        "notes":"plate number: xyz"
+                    }
+                ],
+                "check_ins_missed": 0,
+                "check_in_threshold": 3,
+                "check_in_freq": 300
+            },
+            "is_verified": False
+        })
+    if user.acknowledged:
+        return 200
+    return 500
 
 
 # @api_view(('GET',))
