@@ -9,7 +9,7 @@ from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 from django.template import Template
 from django.http import JsonResponse
 
-from database.getdata import get_data
+from database.getdata import *
 
 
 # TODO: don't hardcode username & password
@@ -30,8 +30,22 @@ def get_user_data(request):
     data = get_data()
     return Response(data)
 
-@api_view(['GET'])
+@api_view(['DELETE'])
 @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
-def get_user_data(request):
-    data = get_data()
+def delete_user_data(request):
+    data = delete_data()
+    return Response(data)
+
+@api_view(['PUT'])
+@renderer_classes((TemplateHTMLRenderer, JSONRenderer))
+def insert_user_data(request):
+    # use the request data in insert_data() and figure out how to parse it
+    data = insert_data()
+    return Response(data)
+
+@api_view(['PUT'])
+@renderer_classes((TemplateHTMLRenderer, JSONRenderer))
+def insert_user_session(request):
+    # use the request data in insert_data() and figure out how to parse it
+    data = insert_session()
     return Response(data)
