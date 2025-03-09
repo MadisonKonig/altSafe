@@ -38,11 +38,10 @@ def insert_data():
     user = users.find_one_and_update(filter=query, update={})
     return 500
 
-#TODO: change insert to update. Cause insert sucks, and it's an update.
-def update_verified():
+def update_verified(phone_number):
     users = connect_to_database()
     print('test')
-    query = {"phone_number":6049992837} #{'$inc': {'x': 3}}
+    query = {"phone_number":phone_number} #{'$inc': {'x': 3}}
     user = users.find_one_and_update(filter=query, update=({'$set':{'is_verified':True}}))
     user["_id"] = str(user["_id"])
     return user
@@ -54,7 +53,7 @@ def create_user():
 
     user = users.insert_one(
         {
-	        "name":"Rachwle",
+	        "name":"Dilbert",
 	        "phone_number":6049992845,
             "emergency_contacts": [
                 {
@@ -91,5 +90,17 @@ def insert_verification_number():
     ver_num = 12345
     user = users.find_one_and_update(filter=query, update={'$set':{'verification_number':ver_num}}, return_document=ReturnDocument.AFTER)
     if user['verification_number'] == ver_num:
+        return 200
+    return 500
+
+def verify_verification_number():
+    users = connect_to_database()
+    phone_number = 6049992857
+    verification_number = 12345
+    # Query for a movie that has the title 'Back to the Future'
+    query = { "phone_number":phone_number, "verification_number":verification_number }
+    user = users.find_one(query)
+    if user:
+        update_verified(phone_number)
         return 200
     return 500

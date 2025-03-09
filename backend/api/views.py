@@ -43,13 +43,6 @@ def insert_user_data(request):
     data = insert_data()
     return Response(data)
 
-@api_view(['PUT'])
-@renderer_classes((TemplateHTMLRenderer, JSONRenderer))
-def insert_user_verified(request):
-    # use the request data in insert_data() and figure out how to parse it
-    data = update_verified()
-    return Response(data)
-
 @api_view(['POST'])
 @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
 def create_user_data(request):
@@ -62,4 +55,11 @@ def create_user_data(request):
 def insert_user_verification_number(request):
     # use the request data in insert_data() and figure out how to parse it
     data = insert_verification_number()
+    return Response(data)
+
+@api_view(['GET'])
+@renderer_classes((TemplateHTMLRenderer, JSONRenderer))
+def verify_user_verification_number(request):
+    # use the request data in insert_data() and figure out how to parse it
+    data = verify_verification_number()
     return Response(data)
