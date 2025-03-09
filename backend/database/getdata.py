@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+from pymongo import ReturnDocument
 
 
 
@@ -53,8 +54,8 @@ def create_user():
 
     user = users.insert_one(
         {
-	        "name":"Bert",
-	        "phone_number":6049992857,
+	        "name":"Rachwle",
+	        "phone_number":6049992845,
             "emergency_contacts": [
                 {
                 "contact_order": 1,
@@ -75,48 +76,20 @@ def create_user():
             },
             "is_verified": False
         })
+    #user.inserted_id is the newly made user
     if user.acknowledged:
         return 200
     return 500
 
 
-# @api_view(('GET',))
-# @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
-# def get_data(request):
-    
-#     return Response(user)
-
-# #
-# @api_view(('INSERT',))
-# @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
-# def insert_data(request):
-#     uri = "[REDACTED]"
-
-#     # Create a new client and connect to the server
-#     client = MongoClient(uri, server_api=ServerApi('1'))
-#     [...]
-#     database = client.get_database("cmd-f")
-#     users = database.get_collection("users")
-#     # Query for a movie that has the title 'Back to the Future'
-#     query = { "phone_number": 6049992837 }
-#     user = users.find_one(query)
-#     if user:
-#         user["_id"] = str(user["_id"])
-#     return Response(user)
-
-# @api_view(('DELETE',))
-# @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
-# def delete_data(request):
-#     uri = "[REDACTED]"
-
-#     # Create a new client and connect to the server
-#     client = MongoClient(uri, server_api=ServerApi('1'))
-#     [...]
-#     database = client.get_database("cmd-f")
-#     users = database.get_collection("users")
-#     # Query for a movie that has the title 'Back to the Future'
-#     query = { "phone_number": 6049992837 }
-#     user = users.find_one(query)
-#     if user:
-#         user["_id"] = str(user["_id"])
-#     return Response(user)
+#insert_verification_number
+def insert_verification_number():
+    users = connect_to_database()
+    print('test')
+    # print(data)
+    query = {"phone_number":6049992857}
+    ver_num = 12345
+    user = users.find_one_and_update(filter=query, update={'$set':{'verification_number':ver_num}}, return_document=ReturnDocument.AFTER)
+    if user['verification_number'] == ver_num:
+        return 200
+    return 500

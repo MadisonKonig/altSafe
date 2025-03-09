@@ -56,3 +56,10 @@ def create_user_data(request):
     # use the request data in insert_data() and figure out how to parse it
     data = create_user()
     return Response(data)
+
+@api_view(['PUT'])
+@renderer_classes((TemplateHTMLRenderer, JSONRenderer))
+def insert_user_verification_number(request):
+    # use the request data in insert_data() and figure out how to parse it
+    data = insert_verification_number()
+    return Response(data)
