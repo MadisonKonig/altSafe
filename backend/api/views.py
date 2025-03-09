@@ -28,35 +28,46 @@ def get_user_data(request):
 @api_view(['DELETE'])
 @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
 def delete_user_data(request):
-    data = delete_data()
+    user = request.user
+    data = delete_data(user.id)
     return Response(data)
 
-@api_view(['PUT'])
-@renderer_classes((TemplateHTMLRenderer, JSONRenderer))
-def insert_user_data(request):
-    # use the request data in insert_data() and figure out how to parse it
-    data = insert_data()
-    return Response(data)
+# @api_view(['PUT'])
+# @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
+# def insert_user_data(request):
+#     user = request.user
+#     # use the request data in insert_data() and figure out how to parse it
+#     data = insert_data()
+#     return Response(data)
 
+# TODO: get data from body and replace hardcoding
+# TODO: need to invoke method from notify to send the verification text message
+# returns: JWT token
 @api_view(['POST'])
 @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
+@permission_classes([AllowAny]) # This bypasses the User ID check, as user ID doesn't exist yet
 def create_user_data(request):
-    # use the request data in insert_data() and figure out how to parse it
-    data = create_user()
-    return Response(data)
+    user = create_user()
+    jwt = create_jwt(user["_id"])
+    return Response(jwt)
 
-@api_view(['PUT'])
-@renderer_classes((TemplateHTMLRenderer, JSONRenderer))
-def insert_user_verification_number(request):
-    # use the request data in insert_data() and figure out how to parse it
-    data = insert_verification_number()
-    return Response(data)
+# @api_view(['PUT'])
+# @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
 
-@api_view(['GET'])
+# TODO we actually don't need this because we will call the db method from the notify app.
+# def insert_user_verification_number(request):
+#     user = request.user
+#     # use the request data in insert_data() and figure out how to parse it
+#     data = insert_verification_number(user.id)
+#     return Response(data)
+
+
+# TODO get verification number from request. We need to get the user, check if the numbers match. True = change db val. False = return error
+@api_view(['PUT'])  # naming
 @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
 def verify_user_verification_number(request):
-    # use the request data in insert_data() and figure out how to parse it
-    data = verify_verification_number()
+    user = request.user
+    data = verify_verification_number(user.id)
     return Response(data)
 
 #JWT stuff

@@ -3,8 +3,9 @@ from bson import ObjectId
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from pymongo import ReturnDocument
+from rest_framework.exceptions import NotFound
 
-
+#@TODO: See what returning error codes does - does it exit the API altogether? 
 
 def connect_to_database():
     # TODO: don't hardcode username & password
@@ -17,39 +18,40 @@ def connect_to_database():
     users = database.get_collection("users")
     return users
 
-def get_data(id ):
+def get_data(id):
     users = connect_to_database()
     query = { "_id": ObjectId(id) }
     user = users.find_one(query)
     user["_id"] = str(user["_id"])
     return user
 
-def delete_data():
+def delete_data(id):
     users = connect_to_database()
-    users.find_one_and_delete
-    return 204
+    query = { "_id": ObjectId(id) }
+    try:
+        users.find_one_and_delete(query)
+        return 204
+    except Exception as e:
+            raise NotFound(str(e))
+    
+# def insert_data():
+#     users = connect_to_database()
+#     print('test')
+#     # print(data)
+#     query = {"phone_number":6049992837}
+#     user = users.find_one_and_update(filter=query, update={})
+#     return 500
 
-def insert_data():
+def update_verified(id):
     users = connect_to_database()
     print('test')
-    # print(data)
-    query = {"phone_number":6049992837}
-    user = users.find_one_and_update(filter=query, update={})
-    return 500
-
-def update_verified(phone_number):
-    users = connect_to_database()
-    print('test')
-    query = {"phone_number":phone_number} #{'$inc': {'x': 3}}
+    query = { "_id": ObjectId(id) }
     user = users.find_one_and_update(filter=query, update=({'$set':{'is_verified':True}}))
     user["_id"] = str(user["_id"])
     return user
 
-
-#TODO: change insert to update. Cause insert sucks, and it's an update.
 def create_user():
     users = connect_to_database()
-
     user = users.insert_one(
         {
 	        "name":"Dilbert",
@@ -76,30 +78,28 @@ def create_user():
         })
     #user.inserted_id is the newly made user
     if user.acknowledged:
-        return 200
+        return user
     return 500
 
 
-#insert_verification_number
-def insert_verification_number():
-    users = connect_to_database()
-    print('test')
-    # print(data)
-    query = {"phone_number":6049992857}
-    ver_num = 12345
-    user = users.find_one_and_update(filter=query, update={'$set':{'verification_number':ver_num}}, return_document=ReturnDocument.AFTER)
-    if user['verification_number'] == ver_num:
-        return 200
-    return 500
+# def insert_verification_number():
+#     users = connect_to_database()
+#     print('test')
+#     # print(data)
+#     query = {"phone_number":6049992857}
+#     ver_num = 12345
+#     user = users.find_one_and_update(filter=query, update={'$set':{'verification_number':ver_num}}, return_document=ReturnDocument.AFTER)
+#     if user['verification_number'] == ver_num:
+#         return 200
+#     return 500
 
-def verify_verification_number():
+
+
+def verify_verification_number(id, verification_number):
     users = connect_to_database()
-    phone_number = 6049992857
-    verification_number = 12345
-    # Query for a movie that has the title 'Back to the Future'
-    query = { "phone_number":phone_number, "verification_number":verification_number }
+    query = { "_id": ObjectId(id), "verification_number":verification_number }
     user = users.find_one(query)
     if user:
-        update_verified(phone_number)
+        update_verified(id)
         return 200
     return 500
