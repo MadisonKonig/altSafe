@@ -3,10 +3,8 @@ from apscheduler.jobstores.base import JobLookupError
 from apscheduler.triggers.date import DateTrigger
 from datetime import datetime, timedelta
 from database.getdata import *
-import uuid
 
 from .sms import send_checkin, contact_emergency
-from django.conf import settings
 
 scheduler = BackgroundScheduler()
 

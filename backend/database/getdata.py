@@ -3,13 +3,17 @@ from bson import ObjectId
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from pymongo import ReturnDocument
-from rest_framework.exceptions import NotFound
+from requests import Response
+from rest_framework.exceptions import NotFound, APIException
+from rest_framework import status
+from django.conf import settings
 
-#@TODO: See what returning error codes does - does it exit the API altogether? 
+from backend.notify.services.queue import start_notify_scheduler
+
+#TODO: See what returning error codes does - does it exit the API altogether? 
 
 def connect_to_database():
-    # TODO: don't hardcode username & password
-    uri = "[REDACTED]"
+    uri = f'mongodb+srv://{settings.DATABASE_USERNAME}:{settings.DATABASE_PASSWORD}@cluster0.mma1n.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
     # Create a new client and connect to the server
     client = MongoClient(uri, server_api=ServerApi('1'))
 
@@ -30,108 +34,97 @@ def delete_data(id):
     query = { "_id": ObjectId(id) }
     try:
         users.find_one_and_delete(query)
-        return 204
+        return status.HTTP_200_OK
     except Exception as e:
             raise NotFound(str(e))
-    
-# def insert_data():
-#     users = connect_to_database()
-#     print('test')
-#     # print(data)
-#     query = {"phone_number":6049992837}
-#     user = users.find_one_and_update(filter=query, update={})
-#     return 500
 
-def update_verified(id):
-    users = connect_to_database()
-    print('test')
-    query = { "_id": ObjectId(id) }
-    user = users.find_one_and_update(filter=query, update=({'$set':{'is_verified':True}}))
-    user["_id"] = str(user["_id"])
-    return user
-
-def create_user():
+def create_user(name, phone_number, emergency_contact_name, emergency_contact_phone_number):
     users = connect_to_database()
     user = users.insert_one(
-        {
-	        "name":"Jimjot",
-	        "phone_number":6039992852,
-            "emergency_contacts": [
-                {
-                "contact_order": 1,
-                "name_id": "The Kid",
-                "phone_number": 6049992852
-                }
-            ],
-            "sessions": None,
-            "is_verified": False
-        })
-    #user.inserted_id is the newly made user
-    if user.acknowledged:
-        return user
-    return 500
-
-
+    {
+        "name": name,
+        "phone_number": phone_number,
+        "emergency_contacts": [
+            {
+            "contact_order": 1,
+            "name_id": emergency_contact_name,
+            "phone_number": emergency_contact_phone_number
+            }
+        ],
+        "sessions": None,
+        "is_verified": False
+    })
+    return str(user.inserted_id)
+    
 def insert_verification_number(id, otp):
     users = connect_to_database()
     query = { "_id": ObjectId(id) }
     user = users.find_one_and_update(filter=query, update={'$set':{'verification_number':otp}}, return_document=ReturnDocument.AFTER)
     if user['verification_number'] == otp:
-        return 200
+        return status.HTTP_200_OK
     return 500
-
-
 
 def verify_verification_number(id, verification_number):
-    users = connect_to_database()
-    query = { "_id": ObjectId(id), "verification_number":verification_number }
-    user = users.find_one(query)
-    if user:
-        update_verified(id) 
-        return 200
-    return 500
+    try:
+        users = connect_to_database()
+        query = { "_id": ObjectId(id), "verification_number":verification_number }
+        user = users.find_one(query)
+        if verification_number == user.verification_number:
+            update_is_verified(id) 
+            start_session(id, "", "", 1, 2)
+            start_notify_scheduler(2, user.phone_number, id)
+            return status.HTTP_200_OK
+    
+    except APIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    except Exception as e:
+        return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-def end_session():
+def update_is_verified(id):
+    try:
+        users = connect_to_database()
+        query = { "_id": ObjectId(id) }
+        user = users.find_one_and_update(filter=query, update=({'$set':{'is_verified':True}}))
+        user["_id"] = str(user["_id"])
+
+        return user
+    
+    except APIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    except Exception as e:
+        return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+def end_session(id):
     users = connect_to_database()
-    phone_number = 6049992857
-    query = {"phone_number":phone_number}
+    query = { "_id": ObjectId(id) }
     user = users.find_one_and_update(filter=query, update={'$set':{'sessions':None}}, return_document=ReturnDocument.AFTER)
     if user['sessions'] == None:
-        return 200
+        return status.HTTP_200_OK
     return 500
 
-def start_session():
-    location = "loc"
-    notes = 'notes'
-    check_in_threshold = 3
-    check_in_freq = 300
+def start_session(id, location, notes, check_in_threshold, check_in_freq):
     users = connect_to_database()
-    phone_number = 6039992852
-    query = {"phone_number":phone_number}
+    query = { "_id": ObjectId(id) }
     user = users.find_one_and_update(filter=query, update={
         "$set": {  
         "sessions": {  # Set default sessions structure if inserting a new user
             "check_ins": [],
             "check_ins_missed": 0,
-            "check_in_threshold": 3,
-            "check_in_freq": 300
+            "check_in_threshold": check_in_threshold,
+            "check_in_freq": check_in_freq
         }
     }
     }, return_document=ReturnDocument.AFTER)
-    print(user)
     if user['sessions']:
-        check_in()
-        return 200
+        check_in(id, location, notes)
+        return status.HTTP_200_OK
     return 500
 
 #TODO: the end check doesn't see if it was pushed. 
 # Should count size of array and compare
-def check_in():
-    location = "loccc"
-    notes = 'notesss'
+def check_in(id, location, notes):
     users = connect_to_database()
-    phone_number = 6039992852
-    query = {"phone_number":phone_number}
+    query = { "_id": ObjectId(id) }
     user = users.find_one_and_update(filter=query, update={'$push':{
                 "sessions.check_ins": 
                     {
@@ -142,7 +135,7 @@ def check_in():
         }
     }, return_document=ReturnDocument.AFTER)
     if user['sessions']:
-        return 200
+        return status.HTTP_200_OK
     return 500
 
 #TODO: end check is pointless. but mvp babbby

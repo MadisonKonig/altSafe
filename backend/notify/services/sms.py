@@ -1,7 +1,6 @@
 from django.conf import settings
 from twilio.rest import Client
 from database.getdata import *
-from .queue import *
 import secrets
 
 def send_sms(to, message):
@@ -21,6 +20,7 @@ def send_verification(user_id, to_number):
     insert_verification_number(user_id, otp)
 
 def send_checkin(interval, destination, user_id): 
+    from .queue import start_miss_scheduler
     message = "This is <app name>. Please check-in at <weburl>."
     send_sms(destination, message)
     start_miss_scheduler(interval, user_id)
