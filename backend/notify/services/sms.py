@@ -21,3 +21,13 @@ def send_verification(to):
 def send_checkin(to): 
     message = "This is <app name>. Please check-in at <weburl>."
     send_sms(to, message)
+
+# TODO: We need to get the emergency contact of the user. 
+# then, we want to send a text to them saying that checkins were missed.
+def contact_emergency(user_id):
+    user = None # user obj from mongoDB
+    to = ""     # emerg contact phone number
+    minutes = "" # We can get the numbers missed * frequency to say how long we havn't heard from them
+    message = f"Hello, {user.name} was supposed to check in with us {minutes} ago. Could you please check-in with them?"
+    send_sms(to, message)
+    
