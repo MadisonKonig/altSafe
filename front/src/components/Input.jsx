@@ -1,6 +1,6 @@
 import Form from "react-bootstrap/Form";
 
-const Input = ({ label, type, comment, id, placeholder, required }) => {
+const Input = ({ label, type, comment, id, placeholder, required, name }) => {
   return (
     <>
       <Form.Label htmlFor="inputPassword5">{label}</Form.Label>
@@ -10,6 +10,7 @@ const Input = ({ label, type, comment, id, placeholder, required }) => {
         aria-describedby="passwordHelpBlock"
         placeholder={placeholder}
         required={required}
+        name={name}
       />
       {comment ? (
         <Form.Text id={id} muted>

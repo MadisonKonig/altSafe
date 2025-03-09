@@ -1,3 +1,4 @@
+// Custom useInterval Hook
 import { useEffect } from "react";
 
 function useInterval(callback, delay) {
@@ -5,7 +6,6 @@ function useInterval(callback, delay) {
     if (delay === null) return;
 
     const intervalId = setInterval(callback, delay);
-
     return () => clearInterval(intervalId);
   }, [callback, delay]);
 }

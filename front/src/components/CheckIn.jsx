@@ -3,83 +3,128 @@ import Button from "react-bootstrap/Button";
 import useInterval from "../components/hooks/useInterval";
 
 function CheckIn({ onEndSession }) {
-  const [location, setLocation] = useState(null); // 사용자 위치
-  const [lastCheckInTime, setLastCheckInTime] = useState(null); // 마지막 체크인 시간
-  const [remainingTime, setRemainingTime] = useState(0); // 남은 시간
-  const [isSessionActive, setIsSessionActive] = useState(true); // 세션 상태
-  const [isCheckingIn, setIsCheckingIn] = useState(false); // 체크인 진행 상태
+  const [location, setLocation] = useState(null); // User location
+  const [lastCheckInTime, setLastCheckInTime] = useState(null); // Last check-in time
+  const [remainingTime, setRemainingTime] = useState(0); // Remaining time in seconds
+  const [isSessionActive, setIsSessionActive] = useState(true); // Session status
+  const [isCheckingIn, setIsCheckingIn] = useState(false); // Check-in progress status
+  const [checkInAvailable, setCheckInAvailable] = useState(true); // Track if check-in is available
+  const [checkInButtonClicked, setCheckInButtonClicked] = useState(false); // Track if button has been clicked
+  const [locationFetched, setLocationFetched] = useState(false); // Track if location has been fetched
 
   const checkInFrequency =
-    Number(localStorage.getItem("checkInFrequency")) || 0; // 로컬 스토리지에서 체크인 주기 가져오기
+    Number(localStorage.getItem("checkInFrequency")) || 0; // Get check-in frequency from local storage (in minutes)
+
+  // Convert check-in frequency from minutes to seconds
+  const checkInFrequencyInSeconds = checkInFrequency * 60;
 
   // Get user's location using geolocation API
   const getLocation = () => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setLocation(position.coords); // 위치 저장
-        setLastCheckInTime(new Date()); // 체크인 시간 기록
+        setLocation(position.coords); // Store location
+        setLastCheckInTime(new Date()); // Record check-in time
+        setLocationFetched(true); // Mark location as fetched
       },
       (error) => {
-        console.log("Geolocation error:", error); // 위치 에러 처리
+        console.log("Geolocation error:", error); // Handle location error
       }
     );
   };
 
   const sendEmergencyAlert = () => {
     console.log("Emergency Alert: You missed a check-in!");
-    // 여기에 이메일 또는 SMS 보내는 로직을 추가할 수 있음
+    // Add logic to send email or SMS here (e.g., integrate an email API)
   };
 
-  // 자동으로 체크인 시도 (interval 설정)
+  // Automatically attempt check-in (interval setup)
   useInterval(() => {
-    if (isSessionActive && checkInFrequency > 0) {
+    if (
+      isSessionActive &&
+      locationFetched &&
+      checkInFrequency > 0 &&
+      lastCheckInTime
+    ) {
       const now = new Date();
-      if (
-        lastCheckInTime &&
-        now - lastCheckInTime > checkInFrequency * 60 * 1000
-      ) {
-        // 체크인 주기를 초과하면 실패로 간주하고 알림 보내기
-        sendEmergencyAlert(); // 알림 전송
-        setLastCheckInTime(now); // 알림 후 체크인 시간 리셋
+      const timeDiff = now - lastCheckInTime; // Time difference in milliseconds
+      const timeLeft = checkInFrequencyInSeconds - Math.floor(timeDiff / 1000); // Time left in seconds
+
+      // If time is up, send an alert and reset check-in time
+      if (timeDiff > checkInFrequencyInSeconds * 1000) {
+        sendEmergencyAlert();
+        setLastCheckInTime(now); // Reset last check-in time after alert
       }
 
-      // 남은 시간 계산
-      const timeLeft =
-        checkInFrequency - Math.floor((now - lastCheckInTime) / (60 * 1000)); // 남은 시간(분 단위)
-      setRemainingTime(timeLeft >= 0 ? timeLeft : 0); // 남은 시간이 0 이하가 되지 않도록 처리
+      // Ensure remainingTime does not go below 0
+      if (timeLeft >= 0) {
+        setRemainingTime(timeLeft); // Update remaining time
+      } else {
+        setRemainingTime(0); // If time left is negative, set it to 0
+      }
     }
-  }, 60 * 1000); // 1분마다 체크
+  }, 1000); // Check every second (1000 ms)
 
-  // Start check-in 버튼 클릭 시 실행
+  // Triggered when Start check-in button is clicked
   const handleCheckIn = () => {
-    setIsCheckingIn(true); // 체크인 시작 상태로 변경
-    getLocation(); // 위치 요청
+    setIsCheckingIn(true); // Change to checking in state
+    getLocation(); // Request location
+    setRemainingTime(20); // Set remaining time to 20 seconds initially
+    setCheckInButtonClicked(true); // Mark that the button has been clicked
   };
 
-  // 세션 종료 처리
+  // Handle session end
   const handleEndSession = () => {
-    setIsSessionActive(false); // 세션 종료 상태로 변경
-    onEndSession(); // App.js에 세션 종료 요청
+    setIsSessionActive(false); // Change to session inactive state
+    onEndSession(); // Request session end from App.js
   };
 
-  // 체크인 주기가 설정되었을 때 초기화
+  // Handle reactivation of button when remaining time is 0
   useEffect(() => {
-    if (checkInFrequency > 0) {
-      setLastCheckInTime(new Date()); // 체크인 시작 시점 설정
+    if (remainingTime === 0 && isSessionActive) {
+      // Reactivate the button when remaining time is 0
+      setCheckInAvailable(true); // Make "Start Check-in" button available again
+      setIsCheckingIn(false); // Reset checking in state
     }
-  }, [checkInFrequency]);
+  }, [remainingTime, isSessionActive]);
+
+  // Handle check-in availability timeout (20 seconds window)
+  useEffect(() => {
+    if (checkInButtonClicked) {
+      // Set a timeout for 20 seconds after the check-in button is clicked
+      const timeout = setTimeout(() => {
+        if (remainingTime > 0 && !checkInAvailable) {
+          sendEmergencyAlert(); // Send an email alert if button was not pressed in time
+        }
+      }, 20000); // 20 seconds timeout
+
+      return () => clearTimeout(timeout); // Clean up the timeout when the component unmounts or state changes
+    }
+  }, [checkInButtonClicked, remainingTime, checkInAvailable]);
+
+  // Handle button click within 20 seconds
+  const handleCheckInComplete = () => {
+    setRemainingTime(checkInFrequencyInSeconds); // Reset remaining time to the user-defined frequency
+    setCheckInAvailable(false); // Disable button to prevent further clicks
+  };
+
+  // Format remaining time as minutes:seconds
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const sec = seconds % 60;
+    return `${minutes}:${sec < 10 ? "0" + sec : sec}`; // Ensure two digits for seconds
+  };
 
   return (
     <div className="check-in">
       <h3>Check-in</h3>
 
-      {/* Start Check-in 버튼 */}
-      {!isSessionActive ? (
-        <Button onClick={handleEndSession}>End Session</Button>
-      ) : !isCheckingIn ? (
-        <Button onClick={handleCheckIn}>Start Check-in</Button>
+      {/* Start Check-in button */}
+      {isSessionActive && !isCheckingIn ? (
+        <Button onClick={handleCheckIn} disabled={!checkInAvailable}>
+          {checkInAvailable ? "Start Check-in" : "Waiting..."}
+        </Button>
       ) : (
-        <p>Checking in...</p>
+        <p>Checked In</p>
       )}
 
       {location && (
@@ -92,13 +137,18 @@ function CheckIn({ onEndSession }) {
       )}
 
       {/* Remaining time display */}
-      <p>Remaining Time: {remainingTime} minutes</p>
+      <p>Remaining Time: {formatTime(remainingTime)}</p>
 
       {/* End Session button */}
       {isSessionActive && (
         <Button variant="danger" onClick={handleEndSession} className="mt-3">
           End Session
         </Button>
+      )}
+
+      {/* Check-in Complete button (only available after 20 seconds or user click) */}
+      {remainingTime === 0 && !checkInAvailable && (
+        <Button onClick={handleCheckInComplete}>Complete Check-in</Button>
       )}
     </div>
   );
