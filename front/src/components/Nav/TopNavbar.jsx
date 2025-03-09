@@ -7,6 +7,7 @@ import Backdrop from "../Elements/Backdrop";
 // Assets
 import BurgerIcon from "../../assets/svg/BurgerIcon";
 import { useLocation, useNavigate } from "react-router-dom";
+
 export default function TopNavbar() {
   const { pathname } = useLocation();
   const [y, setY] = useState(window.scrollY);
@@ -29,11 +30,14 @@ export default function TopNavbar() {
         style={y > 100 ? { height: "60px" } : { height: "80px" }}
       >
         <NavInner className="container flexSpaceCenter">
-          <Link className="pointer flexNullCenter" to="/" smooth={true}>
-            <h1 style={{ marginLeft: "15px" }} className="font20 extraBold">
-              SAFECHECK
-            </h1>
-          </Link>
+          {/* Logo section with navigation to '/' */}
+          <h1
+            style={{ marginLeft: "15px" }}
+            className="font20 extraBold pointer"
+            onClick={() => navigate("/")}
+          >
+            SAFECHECK
+          </h1>
           <BurderWrapper
             className="pointer"
             onClick={() => toggleSidebar(!sidebarOpen)}

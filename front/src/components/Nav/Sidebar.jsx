@@ -79,7 +79,7 @@ export default function Sidebar({ sidebarOpen, toggleSidebar }) {
         </li>
         <li className="semiBold font15 pointer flexCenter">
           <a
-            href="/"
+            href="/checkin"
             className="radius8 lightBg"
             style={{ padding: "10px 15px" }}
           >
