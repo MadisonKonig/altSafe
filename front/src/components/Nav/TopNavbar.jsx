@@ -6,8 +6,9 @@ import Sidebar from "../Nav/Sidebar";
 import Backdrop from "../Elements/Backdrop";
 // Assets
 import BurgerIcon from "../../assets/svg/BurgerIcon";
-
+import { useLocation } from "react-router-dom";
 export default function TopNavbar() {
+  const { pathname } = useLocation();
   const [y, setY] = useState(window.scrollY);
   const [sidebarOpen, toggleSidebar] = useState(false);
 
@@ -28,9 +29,8 @@ export default function TopNavbar() {
       >
         <NavInner className="container flexSpaceCenter">
           <Link className="pointer flexNullCenter" to="home" smooth={true}>
-            <LogoIcon />
             <h1 style={{ marginLeft: "15px" }} className="font20 extraBold">
-              Name
+              SAFECHECK
             </h1>
           </Link>
           <BurderWrapper
@@ -80,13 +80,17 @@ export default function TopNavbar() {
           </UlWrapper>
           <UlWrapperRight className="flexNullCenter">
             <li className="semiBold font15 pointer">
-              <a href="/" style={{ padding: "10px 30px 10px 0" }}>
-                Log in
-              </a>
+              {pathname !== "/login" && (
+                <li className="semiBold font15 pointer">
+                  <a href="/login" style={{ padding: "10px 30px 10px 0" }}>
+                    Log in
+                  </a>
+                </li>
+              )}
             </li>
             <li className="semiBold font15 pointer flexCenter">
               <a
-                href="/"
+                href="/checkin"
                 className="radius8 lightBg"
                 style={{ padding: "10px 15px" }}
               >
@@ -132,10 +136,4 @@ const UlWrapperRight = styled.ul`
   @media (max-width: 760px) {
     display: none;
   }
-`;
-
-const LogoIcon = styled.div`
-  width: 40px;
-  height: 40px;
-  background-color: gray;
 `;

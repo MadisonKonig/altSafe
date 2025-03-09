@@ -1,9 +1,28 @@
-import React from "react";
+import React, { useEffect, useInsertionEffect, useState } from "react";
 import styled from "styled-components";
 import ProjectBox from "../Elements/ProjectBox";
 import FullButton from "../Buttons/FullButton";
 
 export default function Projects() {
+  const [data, setData] = useState();
+  const json = async () => {
+    const res = await (await fetch("backend/api/views.py")).json();
+    console.log(res);
+  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch("/api/data/"); //
+        console.log(res);
+        setData(json);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+  console.log(json);
   return (
     <Wrapper id="projects">
       <div className="whiteBg">

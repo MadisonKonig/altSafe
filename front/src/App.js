@@ -1,20 +1,22 @@
 import React from "react";
 import { Helmet } from "react-helmet";
+import { Routes, Route } from "react-router-dom";
 
 import Landing from "./views/Landing.jsx";
+import Login from "./views/Login.jsx";
+import CheckIn from "./views/CheckIn.jsx";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function App() {
   return (
     <>
-      {/* <Helmet>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Khula:wght@400;600;800&display=swap"
-          rel="stylesheet"
-        />
-      </Helmet> */}
-      <Landing />
+      <Routes>
+        <Route path="/" element={<Landing />}></Route>
+        <Route path="/login" element={<Login />}></Route>
+        <Route path="/checkin" element={<CheckIn />}></Route>
+      </Routes>
+      <ToastContainer />
     </>
   );
 }
