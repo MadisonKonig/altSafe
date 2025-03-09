@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from .queue import start_scheduler
+from .services.queue import start_scheduler
 
 
 def index(request):
