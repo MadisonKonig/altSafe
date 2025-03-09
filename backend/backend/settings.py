@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -19,9 +20,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-7u&xvv&u8wf+c#y9-cpznnr76ls&quwh@yic_hm84nu10dgm$x'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -35,6 +33,10 @@ TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN")
 TWILIO_NUMBER = env("TWILIO_NUMBER")
 DEFAULT_NUMBER = env("DEFAULT_NUMBER")
+DJANGO_SECRET_KEY = env("SECRET_KEY")
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = DJANGO_SECRET_KEY
 
 # Application definition
 
@@ -47,8 +49,27 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
     'api',
 ]
+
+REST_FRAMEWORK = {
+    # We will only do authentication with JWT
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'api.services.authenticate.UserAuthentication',
+    ),
+    # This means that all API views require to be authenticated
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+    # permission_classes = [AllowAny] in a view class to allow anybody to access this view
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=15),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=20),
+    'SLIDING_TOKEN_LIFETIME': timedelta(days=30),
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
