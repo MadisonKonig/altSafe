@@ -10,6 +10,7 @@ def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
     try:
+        # TODO: don't hardcode username & password
         uri = "[REDACTED]"
 
         # Create a new client and connect to the server
