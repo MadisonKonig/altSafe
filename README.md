@@ -9,3 +9,8 @@ Note that you will need python installed to run this server.
 cd backend
 python3 manage.py runserver
 ```
+
+## Making Twilio work
+You need the environmental variables for twilio. Make a copy of backend/backend/.env.local, and rename it to ".env".
+The twilio keys have been shared in our Discord and pinned! 
+```
