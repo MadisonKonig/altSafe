@@ -68,7 +68,7 @@ function CheckIn({ onEndSession }) {
   const handleCheckIn = () => {
     setIsCheckingIn(true); // Change to checking in state
     getLocation(); // Request location
-    setRemainingTime(20); // Set remaining time to 20 seconds initially
+    setRemainingTime(checkInFrequencyInSeconds); // Set initial remaining time
     setCheckInButtonClicked(true); // Mark that the button has been clicked
   };
 
@@ -92,20 +92,14 @@ function CheckIn({ onEndSession }) {
     if (checkInButtonClicked) {
       // Set a timeout for 20 seconds after the check-in button is clicked
       const timeout = setTimeout(() => {
-        if (remainingTime > 0 && !checkInAvailable) {
+        if (!checkInAvailable) {
           sendEmergencyAlert(); // Send an email alert if button was not pressed in time
         }
       }, 20000); // 20 seconds timeout
 
       return () => clearTimeout(timeout); // Clean up the timeout when the component unmounts or state changes
     }
-  }, [checkInButtonClicked, remainingTime, checkInAvailable]);
-
-  // Handle button click within 20 seconds
-  const handleCheckInComplete = () => {
-    setRemainingTime(checkInFrequencyInSeconds); // Reset remaining time to the user-defined frequency
-    setCheckInAvailable(false); // Disable button to prevent further clicks
-  };
+  }, [checkInButtonClicked, checkInAvailable]);
 
   // Format remaining time as minutes:seconds
   const formatTime = (seconds) => {
@@ -124,7 +118,7 @@ function CheckIn({ onEndSession }) {
           {checkInAvailable ? "Start Check-in" : "Waiting..."}
         </Button>
       ) : (
-        <p>Checked In</p>
+        <p>Checking in...</p>
       )}
 
       {location && (
@@ -144,11 +138,6 @@ function CheckIn({ onEndSession }) {
         <Button variant="danger" onClick={handleEndSession} className="mt-3">
           End Session
         </Button>
-      )}
-
-      {/* Check-in Complete button (only available after 20 seconds or user click) */}
-      {remainingTime === 0 && !checkInAvailable && (
-        <Button onClick={handleCheckInComplete}>Complete Check-in</Button>
       )}
     </div>
   );
