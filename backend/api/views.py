@@ -32,6 +32,8 @@ def delete_user_data(request):
 #     return Response(data)
 
 # TODO: get data from body and replace hardcoding
+# TODO: need to invoke method from notify to send the verification text message
+# returns: JWT token
 @api_view(['POST'])
 @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
 @permission_classes([AllowAny]) # This bypasses the User ID check, as user ID doesn't exist yet
@@ -51,12 +53,15 @@ def create_user_data(request):
 #     return Response(data)
 
 
-# TODO get verification number from request. We need to get the user, check if the numbers match. True = change db val. False = return error
+# TODO get verification number from request. 
+# We need to get the user, check if the numbers match. 
+# True = change db val. False = return error
 @api_view(['PUT'])  # naming
 @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
+#TODO Delete later, bypassing for testing
+@permission_classes([AllowAny]) 
 def verify_user_verification_number(request):
-    user = request.user
-    data = verify_verification_number(user.id)
+    data = verify_verification_number(request)
     return Response(data)
 
 @api_view(['POST'])
@@ -70,7 +75,7 @@ def end_user_session(request):
 @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
 def start_user_session(request):
     # use the request data in insert_data() and figure out how to parse it
-    data = start_session()
+    data = start_session(request)
     return Response(data)
 
 @api_view(['POST'])

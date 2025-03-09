@@ -3,7 +3,9 @@ from bson import ObjectId
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from pymongo import ReturnDocument
-from rest_framework.exceptions import NotFound
+from requests import Response
+from rest_framework.exceptions import NotFound, APIException
+from rest_framework import status
 
 #@TODO: See what returning error codes does - does it exit the API altogether? 
 
@@ -33,45 +35,42 @@ def delete_data(id):
         return 204
     except Exception as e:
             raise NotFound(str(e))
-    
-# def insert_data():
-#     users = connect_to_database()
-#     print('test')
-#     # print(data)
-#     query = {"phone_number":6049992837}
-#     user = users.find_one_and_update(filter=query, update={})
-#     return 500
 
-def update_verified(id):
-    users = connect_to_database()
-    print('test')
-    query = { "_id": ObjectId(id) }
-    user = users.find_one_and_update(filter=query, update=({'$set':{'is_verified':True}}))
-    user["_id"] = str(user["_id"])
-    return user
+#TODO: fix end 500 error
+def create_user(request):
+    try:
+        name = request.data.get("name")
+        phone_number = request.data.get("phone number")
 
-def create_user():
-    users = connect_to_database()
-    user = users.insert_one(
+        if not name or not phone_number:
+            raise APIException("Name and phone number are required.", code=status.HTTP_400_BAD_REQUEST)
+        
+        emergency_contact_name = request.data.get("emergency_contact_name")
+        emergency_contact_phone_number = request.data.get("emergency_contact_phone_number")
+        users = connect_to_database()
+        user = users.insert_one(
         {
-	        "name":"Jimjot",
-	        "phone_number":6039992852,
+	        "name": name,
+	        "phone_number": phone_number,
             "emergency_contacts": [
                 {
                 "contact_order": 1,
-                "name_id": "The Kid",
-                "phone_number": 6049992852
+                "name_id": emergency_contact_name,
+                "phone_number": emergency_contact_phone_number
                 }
             ],
             "sessions": None,
             "is_verified": False
         })
-    #user.inserted_id is the newly made user
-    if user.acknowledged:
+        
         return user
-    return 500
 
+    except APIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    except Exception as e:
+        return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+<<<<<<< HEAD
 def insert_verification_number(id, otp):
     users = connect_to_database()
     query = { "_id": ObjectId(id) }
@@ -88,8 +87,50 @@ def verify_verification_number(id, verification_number):
     user = users.find_one(query)
     if user:
         update_verified(id) 
+=======
+def insert_verification_number(id):
+    users = connect_to_database()
+    query = {"phone_number":6049992857}
+    ver_num = 12345
+    user = users.find_one_and_update(filter=query, update={'$set':{'verification_number':ver_num}}, return_document=ReturnDocument.AFTER)
+    if user['verification_number'] == ver_num:
+>>>>>>> 49511203 (fixed hard coding of api calls)
         return 200
     return 500
+
+def update_is_verified(id):
+    try:
+        users = connect_to_database()
+        query = { "_id": ObjectId(id) }
+        user = users.find_one_and_update(filter=query, update=({'$set':{'is_verified':True}}))
+        user["_id"] = str(user["_id"])
+
+        return user
+    
+    except APIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    except Exception as e:
+        return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+# TODO get verification number from request. 
+# We need to get the user, check if the numbers match. 
+# True = change db val. False = return error
+def verify_verification_number(request):
+    try:
+        id = request.data.get("id")
+        verification_number = request.data.get("verification_number")
+        users = connect_to_database()
+        query = { "_id": ObjectId(id) }
+        user = users.find_one(query)
+        print(user)
+        if verification_number == user.verification_number:
+            # update_is_verified(id)
+            return 200
+    
+    except APIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    except Exception as e:
+        return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 def end_session():
     users = connect_to_database()
