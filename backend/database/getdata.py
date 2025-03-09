@@ -8,10 +8,12 @@ from rest_framework.exceptions import NotFound, APIException
 from rest_framework import status
 from django.conf import settings
 
+from backend.notify.services.queue import start_notify_scheduler
+
 #TODO: See what returning error codes does - does it exit the API altogether? 
 
 def connect_to_database():
-    uri = f'mongodb+srv://{settings.DATABASE_USERNAME}:{settings.DATABASE_PASSWORD}.@cluster0.mma1n.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
+    uri = f'mongodb+srv://{settings.DATABASE_USERNAME}:{settings.DATABASE_PASSWORD}@cluster0.mma1n.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
     # Create a new client and connect to the server
     client = MongoClient(uri, server_api=ServerApi('1'))
 
@@ -37,30 +39,23 @@ def delete_data(id):
             raise NotFound(str(e))
 
 def create_user(name, phone_number, emergency_contact_name, emergency_contact_phone_number):
-    try:
-        users = connect_to_database()
-        user = users.insert_one(
-        {
-	        "name": name,
-	        "phone_number": phone_number,
-            "emergency_contacts": [
-                {
-                "contact_order": 1,
-                "name_id": emergency_contact_name,
-                "phone_number": emergency_contact_phone_number
-                }
-            ],
-            "sessions": None,
-            "is_verified": False
-        })
-        
-        return user
-
-    except APIException as e:
-        return Response({"error": str(e)}, status=e.status_code)
-    except Exception as e:
-        return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+    users = connect_to_database()
+    user = users.insert_one(
+    {
+        "name": name,
+        "phone_number": phone_number,
+        "emergency_contacts": [
+            {
+            "contact_order": 1,
+            "name_id": emergency_contact_name,
+            "phone_number": emergency_contact_phone_number
+            }
+        ],
+        "sessions": None,
+        "is_verified": False
+    })
+    return str(user.inserted_id)
+    
 def insert_verification_number(id, otp):
     users = connect_to_database()
     query = { "_id": ObjectId(id) }
@@ -76,6 +71,8 @@ def verify_verification_number(id, verification_number):
         user = users.find_one(query)
         if verification_number == user.verification_number:
             update_is_verified(id) 
+            start_session(id, "", "", 1, 2)
+            start_notify_scheduler(2, user.phone_number, id)
             return status.HTTP_200_OK
     
     except APIException as e:

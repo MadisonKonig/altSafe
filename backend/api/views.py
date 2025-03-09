@@ -39,7 +39,7 @@ def delete_user_data(request):
 @permission_classes([AllowAny]) # This bypasses the User ID check, as user ID doesn't exist yet
 def create_user_data(request):
     name = request.data.get("name")
-    phone_number = request.data.get("phone number")
+    phone_number = request.data.get("phone_number")
     if not name or not phone_number:
         raise APIException("Name and phone number are required.", code=status.HTTP_400_BAD_REQUEST)
     
@@ -49,7 +49,7 @@ def create_user_data(request):
         raise APIException("Emergency name and phone number are required.", code=status.HTTP_400_BAD_REQUEST)
     
     user = create_user(name, phone_number, emergency_contact_name, emergency_contact_phone_number)
-    send_verification(str(user["_id"]), user.phone_number)
+    send_verification(user, phone_number)
     return Response(user)
 
 # @api_view(['PUT'])
