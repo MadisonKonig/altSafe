@@ -25,4 +25,5 @@ urlpatterns = [
     path('notify/', include('notify.urls')),
     # path('getdata/', homeview),
     path('api/', include('api.urls')),
+    # path('database/', include('database.urls'))
 ]
