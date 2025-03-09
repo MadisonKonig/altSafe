@@ -9,6 +9,8 @@ urlpatterns = [
     # path('insert_user_data', views.insert_user_data, name='index'),
     path('delete_user_data', views.delete_user_data, name='index'),
     path('create_user_data', views.create_user_data, name='index'),
+    path('check_user_in', views.check_user_in, name='index'),
+    path('miss_user_check_in', views.miss_user_check_in, name='index'),
     # path('insert_user_verification_number', views.insert_user_verification_number, name='index'),
     path('verify_user_verification_number', views.verify_user_verification_number, name='index'),
     

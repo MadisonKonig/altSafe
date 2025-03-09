@@ -54,26 +54,16 @@ def create_user():
     users = connect_to_database()
     user = users.insert_one(
         {
-	        "name":"Dilbert",
-	        "phone_number":6049992845,
+	        "name":"Jimjot",
+	        "phone_number":6039992852,
             "emergency_contacts": [
                 {
                 "contact_order": 1,
                 "name_id": "The Kid",
-                "phone_number": 6047782938
+                "phone_number": 6049992852
                 }
             ],
-            "sessions": {
-                "check_ins": [
-                    {
-                        "location":"coords",
-                        "notes":"plate number: xyz"
-                    }
-                ],
-                "check_ins_missed": 0,
-                "check_in_threshold": 3,
-                "check_in_freq": 300
-            },
+            "sessions": None,
             "is_verified": False
         })
     #user.inserted_id is the newly made user
@@ -119,21 +109,52 @@ def start_session():
     check_in_threshold = 3
     check_in_freq = 300
     users = connect_to_database()
-    phone_number = 6049992857
+    phone_number = 6039992852
     query = {"phone_number":phone_number}
-    user = users.find_one_and_update(filter=query, update={'$set':{'sessions':
-            {
-                "check_ins": [
+    user = users.find_one_and_update(filter=query, update={
+        "$set": {  
+        "sessions": {  # Set default sessions structure if inserting a new user
+            "check_ins": [],
+            "check_ins_missed": 0,
+            "check_in_threshold": 3,
+            "check_in_freq": 300
+        }
+    }
+    }, return_document=ReturnDocument.AFTER)
+    print(user)
+    if user['sessions']:
+        check_in()
+        return 200
+    return 500
+
+#TODO: the end check doesn't see if it was pushed. 
+# Should count size of array and compare
+def check_in():
+    location = "loccc"
+    notes = 'notesss'
+    users = connect_to_database()
+    phone_number = 6039992852
+    query = {"phone_number":phone_number}
+    user = users.find_one_and_update(filter=query, update={'$push':{
+                "sessions.check_ins": 
                     {
                         "location":location,
                         "notes":notes
                     }
-                ],
-                "check_ins_missed": 0,
-                "check_in_threshold": check_in_threshold,
-                "check_in_freq": check_in_freq
-            }
+                
         }
+    }, return_document=ReturnDocument.AFTER)
+    if user['sessions']:
+        return 200
+    return 500
+
+#TODO: end check is pointless. but mvp babbby
+def miss_check_in():
+    users = connect_to_database()
+    phone_number = 6039992852
+    query = {"phone_number":phone_number}
+    user = users.find_one_and_update(filter=query, update={'$inc':
+        { "sessions.check_ins_missed": 1 }
     }, return_document=ReturnDocument.AFTER)
     if user['sessions']:
         return 200

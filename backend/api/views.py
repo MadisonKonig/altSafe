@@ -74,6 +74,20 @@ def start_user_session(request):
     data = start_session()
     return Response(data)
 
+@api_view(['POST'])
+@renderer_classes((TemplateHTMLRenderer, JSONRenderer))
+def check_user_in(request):
+    # use the request data in insert_data() and figure out how to parse it
+    data = check_in()
+    return Response(data)
+
+@api_view(['POST'])
+@renderer_classes((TemplateHTMLRenderer, JSONRenderer))
+def miss_user_check_in(request):
+    # use the request data in insert_data() and figure out how to parse it
+    data = miss_check_in()
+    return Response(data)
+
 #JWT stuff
 from django.conf import settings
 from rest_framework.views import APIView
