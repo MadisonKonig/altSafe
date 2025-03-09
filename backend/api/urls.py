@@ -16,7 +16,7 @@ urlpatterns = [
     
     # JWT Authentication
     path('', Home.as_view()),
-    #TODO: the front end can use this, to refresh the token.
+    #the front end can use this to refresh the token.
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('end_user_session', views.end_user_session, name='index'),
     path('start_user_session', views.start_user_session, name='index'),

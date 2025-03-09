@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view, renderer_classes, permission_classes
 from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
+from notify.services.sms import send_verification
 
 from database.getdata import *
 
@@ -31,15 +32,13 @@ def delete_user_data(request):
 #     return Response(data)
 
 # TODO: get data from body and replace hardcoding
-# TODO: need to invoke method from notify to send the verification text message
-# returns: JWT token
 @api_view(['POST'])
 @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
 @permission_classes([AllowAny]) # This bypasses the User ID check, as user ID doesn't exist yet
 def create_user_data(request):
     user = create_user()
-    jwt = create_jwt(user["_id"])
-    return Response(jwt)
+    send_verification(str(user["_id"]), user.phone_number)
+    return Response(user)
 
 # @api_view(['PUT'])
 # @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
