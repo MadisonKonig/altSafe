@@ -21,9 +21,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-7u&xvv&u8wf+c#y9-cpznnr76ls&quwh@yic_hm84nu10dgm$x'
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -36,6 +33,10 @@ TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN")
 TWILIO_NUMBER = env("TWILIO_NUMBER")
 DEFAULT_NUMBER = env("DEFAULT_NUMBER")
+DJANGO_SECRET_KEY = env("SECRET_KEY")
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = DJANGO_SECRET_KEY
 
 # Application definition
 
@@ -55,7 +56,7 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     # We will only do authentication with JWT
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.UserAuthentication',
+        'api.services.authenticate.UserAuthentication',
     ),
     # This means that all API views require to be authenticated
     'DEFAULT_PERMISSION_CLASSES': (

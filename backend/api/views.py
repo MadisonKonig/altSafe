@@ -1,13 +1,8 @@
-import json
-from django.shortcuts import render
 
-from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, renderer_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, renderer_classes, permission_classes
 from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
-from django.template import Template
-from django.http import JsonResponse
 
 from database.getdata import *
 
@@ -27,8 +22,8 @@ from database.getdata import *
 @api_view(['GET'])
 @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
 def get_user_data(request):
-    data = get_data()
-    return Response(data)
+    user = request.user
+    return Response(get_data(user.id))
 
 @api_view(['DELETE'])
 @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
@@ -65,11 +60,25 @@ def verify_user_verification_number(request):
     return Response(data)
 
 #JWT stuff
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from .services.jwt import create_jwt
 
+# THIS IS SOLELY FOR POSTMAN USAGE
+def createDummyJwt():
+    # Secret key used to encode and decode JWTs (same as the one you used in settings.py for Simple JWT)
+    SECRET_KEY = settings.SECRET_KEY
+
+    # Generate the JWT token
+    token = create_jwt("67cd77ec65f13195e417028d")
+
+    # Print the token
+    return token
+    
 class Home(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]

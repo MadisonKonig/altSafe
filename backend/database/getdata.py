@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+from bson import ObjectId
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from pymongo import ReturnDocument
@@ -17,10 +17,9 @@ def connect_to_database():
     users = database.get_collection("users")
     return users
 
-def get_data():
+def get_data(id ):
     users = connect_to_database()
-    # Query for a movie that has the title 'Back to the Future'
-    query = { "phone_number": 6049992837 }
+    query = { "_id": ObjectId(id) }
     user = users.find_one(query)
     user["_id"] = str(user["_id"])
     return user
