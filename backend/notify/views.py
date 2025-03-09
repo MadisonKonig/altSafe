@@ -1,8 +1,8 @@
 from django.http import HttpResponse
-from .main import send_sms
+from .queue import start_scheduler
 
 
 def index(request):
     html = '<html lang="en"><body><button type="button">Click Me!</button></body></html>'
-    send_sms("s")
+    start_scheduler(1)
     return HttpResponse(html)
