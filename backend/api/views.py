@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+from rest_framework.response import Response
 
 # TODO: don't hardcode username & password
 uri = "[REDACTED]"
@@ -17,26 +18,6 @@ def homeview(request):
     # Query for a movie that has the title 'Back to the Future'
     query = { "title": "Back to the Future" }
     movie = movies.find_one(query)
-    return render(
-        request,
-        'index.html',
-        {
-            'movie': movie
-        }
+    return Response(
+        movie
     )
-
-
-# def index(request):
-#     collection_city = db['city']
-#     collection_languages = db['languages']
-
-#     cities = list(collection_city.find())
-#     languages = list(collection_languages.find())
-#     dests=Destination.objects.all()
-#     return render(
-#         request,
-#         'index.html', 
-#         {
-            
-#         }
-#     )
