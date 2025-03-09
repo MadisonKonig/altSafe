@@ -9,11 +9,11 @@ from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 from django.template import Template
 from django.http import JsonResponse
 
-# TODO: don't hardcode username & password
-uri = "[REDACTED]"
+from database.getdata import get_data
 
-# Create a new client and connect to the server
-client = MongoClient(uri, server_api=ServerApi('1'))
+
+# TODO: don't hardcode username & password
+
 # database = client.get_database("sample_mflix")
 # movies = database.get_collection("movies")
 # # Query for a movie that has the title 'Back to the Future'
@@ -24,15 +24,14 @@ client = MongoClient(uri, server_api=ServerApi('1'))
 
 # Create your views here.
 
-@api_view(('GET',))
+@api_view(['GET'])
 @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
-def homeview(request):
-    [...]
-    database = client.get_database("cmd-f")
-    users = database.get_collection("users")
-    # Query for a movie that has the title 'Back to the Future'
-    query = { "phone_number": 6049992837 }
-    user = users.find_one(query)
-    if user:
-        user["_id"] = str(user["_id"])
-    return Response(user)
+def get_user_data(request):
+    data = get_data()
+    return Response(data)
+
+@api_view(['GET'])
+@renderer_classes((TemplateHTMLRenderer, JSONRenderer))
+def get_user_data(request):
+    data = get_data()
+    return Response(data)
