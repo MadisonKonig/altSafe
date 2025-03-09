@@ -22,7 +22,7 @@ from rest_framework import routers, serializers, viewsets
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("notify/", include("notify.urls")),
-    path('getdata/', homeview),
+    path('notify/', include('notify.urls')),
+    # path('getdata/', homeview),
     path('api/', include('api.urls')),
 ]

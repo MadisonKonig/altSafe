@@ -6,6 +6,7 @@
 ## Starting the backend
 Note that you will need python installed to run this server.
 ```bash
+pip/3 install twilio django-apscheduler django-environ 
 cd backend
 python3 manage.py runserver
 ```
