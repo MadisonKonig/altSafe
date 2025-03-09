@@ -9,16 +9,6 @@ from database.getdata import *
 
 # TODO: don't hardcode username & password
 
-# database = client.get_database("sample_mflix")
-# movies = database.get_collection("movies")
-# # Query for a movie that has the title 'Back to the Future'
-# query = { "title": "Back to the Future" }
-# movie = movies.find_one(query)
-# print(type(movie))
-# print(movie)
-
-# Create your views here.
-
 @api_view(['GET'])
 @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
 def get_user_data(request):
@@ -68,6 +58,20 @@ def create_user_data(request):
 def verify_user_verification_number(request):
     user = request.user
     data = verify_verification_number(user.id)
+    return Response(data)
+
+@api_view(['POST'])
+@renderer_classes((TemplateHTMLRenderer, JSONRenderer))
+def end_user_session(request):
+    # use the request data in insert_data() and figure out how to parse it
+    data = end_session()
+    return Response(data)
+
+@api_view(['POST'])
+@renderer_classes((TemplateHTMLRenderer, JSONRenderer))
+def start_user_session(request):
+    # use the request data in insert_data() and figure out how to parse it
+    data = start_session()
     return Response(data)
 
 #JWT stuff

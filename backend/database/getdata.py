@@ -103,3 +103,38 @@ def verify_verification_number(id, verification_number):
         update_verified(id)
         return 200
     return 500
+
+def end_session():
+    users = connect_to_database()
+    phone_number = 6049992857
+    query = {"phone_number":phone_number}
+    user = users.find_one_and_update(filter=query, update={'$set':{'sessions':None}}, return_document=ReturnDocument.AFTER)
+    if user['sessions'] == None:
+        return 200
+    return 500
+
+def start_session():
+    location = "loc"
+    notes = 'notes'
+    check_in_threshold = 3
+    check_in_freq = 300
+    users = connect_to_database()
+    phone_number = 6049992857
+    query = {"phone_number":phone_number}
+    user = users.find_one_and_update(filter=query, update={'$set':{'sessions':
+            {
+                "check_ins": [
+                    {
+                        "location":location,
+                        "notes":notes
+                    }
+                ],
+                "check_ins_missed": 0,
+                "check_in_threshold": check_in_threshold,
+                "check_in_freq": check_in_freq
+            }
+        }
+    }, return_document=ReturnDocument.AFTER)
+    if user['sessions']:
+        return 200
+    return 500
