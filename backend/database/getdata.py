@@ -1,38 +1,47 @@
-import json
 from django.shortcuts import render
 
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-from rest_framework.response import Response
-from rest_framework.decorators import api_view, renderer_classes
-from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
-from django.template import Template
-from django.http import JsonResponse
 
-# TODO: don't hardcode username & password
 
-# database = client.get_database("sample_mflix")
-# movies = database.get_collection("movies")
-# # Query for a movie that has the title 'Back to the Future'
-# query = { "title": "Back to the Future" }
-# movie = movies.find_one(query)
-# print(type(movie))
-# print(movie)
 
-# Create your views here.
-
-def get_data():
+def connect_to_database():
     # TODO: don't hardcode username & password
     uri = "[REDACTED]"
-
     # Create a new client and connect to the server
     client = MongoClient(uri, server_api=ServerApi('1'))
-    [...]
+
     database = client.get_database("cmd-f")
+    client.close()
     users = database.get_collection("users")
+    return users
+
+def get_data():
+    users = connect_to_database()
     # Query for a movie that has the title 'Back to the Future'
     query = { "phone_number": 6049992837 }
     user = users.find_one(query)
+    user["_id"] = str(user["_id"])
+    return user
+
+def delete_data():
+    users = connect_to_database()
+    users.find_one_and_delete
+    return 204
+
+def insert_data():
+    users = connect_to_database()
+    print('test')
+    # print(data)
+    query = {"phone_number":6049992837}
+    user = users.find_one_and_update(filter=query, update={})
+    return 500
+
+def insert_session():
+    users = connect_to_database()
+    print('test')
+    query = {"phone_number":6049992837} #{'$inc': {'x': 3}}
+    user = users.find_one_and_update(filter=query, update=({'$set':{'is_verified':True}}))
     user["_id"] = str(user["_id"])
     return user
 
