@@ -1,8 +1,10 @@
 import React from "react";
 import styled from "styled-components";
 import FullButton from "../Buttons/FullButton";
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
+  const navigate = useNavigate();
   return (
     <Wrapper id="home" className="container flexSpaceCenter">
       <LeftSide className="flexCenter">
@@ -15,7 +17,7 @@ export default function Header() {
             et ea rebum.
           </HeaderP>
           <BtnWrapper>
-            <FullButton title="Get Started" />
+            <FullButton title="Get Started" onClick={navigate("/checkin")} />
           </BtnWrapper>
         </div>
       </LeftSide>
