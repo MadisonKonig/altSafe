@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Button from "react-bootstrap/Button";
 import useInterval from "../components/hooks/useInterval";
+import Loading from "./Loading";
 
 function CheckIn({ onEndSession }) {
   const [location, setLocation] = useState(null); // User location
@@ -118,7 +119,7 @@ function CheckIn({ onEndSession }) {
           {checkInAvailable ? "Start Check-in" : "Waiting..."}
         </Button>
       ) : (
-        <p>Checking in...</p>
+        <p>Checked in</p>
       )}
 
       {location && (
