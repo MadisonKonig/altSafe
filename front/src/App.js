@@ -5,41 +5,43 @@ import Tabs from "react-bootstrap/Tabs";
 import Tab from "react-bootstrap/Tab";
 import Input from "./components/Input";
 import Verification from "./components/Verification";
-import Session from "./components/Session";
 import CheckIn from "./components/CheckIn";
 
 function App() {
   const [key, setKey] = useState("email");
   const [showVerification, setShowVerification] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
+  const [checkInFrequency, setCheckInFrequency] = useState(0); // For storing check-in frequency
 
+  // Check session state on component mount
   useEffect(() => {
     const sessionActive = localStorage.getItem("sessionActive");
+    const storedFrequency = localStorage.getItem("checkInFrequency");
     if (sessionActive) {
-      setIsVerified(true);
+      setIsVerified(true); // If session is active, set isVerified to true
+    }
+    if (storedFrequency) {
+      setCheckInFrequency(Number(storedFrequency)); // Retrieve frequency from localStorage
     }
   }, []);
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    const frequencyInput = event.target.elements["frequency"].value;
+    console.log(frequencyInput);
+    setCheckInFrequency(Number(frequencyInput));
+    localStorage.setItem("checkInFrequency", frequencyInput); // Save the frequency to localStorage
     setShowVerification(true);
   };
 
   const handleVerificationSuccess = () => {
     setIsVerified(true);
-    localStorage.setItem("sessionActive", "true");
-  };
-
-  const handleLogout = () => {
-    // Clear session data
-    localStorage.removeItem("sessionActive");
-    setIsVerified(false); // Update isVerified state to false
-    setShowVerification(false); // Hide verification
+    localStorage.setItem("sessionActive", "true"); // Set session active in localStorage
   };
 
   const handleEndSession = () => {
     // End session and reset verified state
-    localStorage.removeItem("sessionActive");
+    localStorage.removeItem("sessionActive"); // Remove session from localStorage
     setIsVerified(false); // Set isVerified to false
   };
 
@@ -71,9 +73,9 @@ function App() {
                     label="Check-in Frequency (minutes)"
                     type="number"
                     placeholder="Enter frequency in minutes"
+                    name="frequency"
                     required
                   />
-
                   <Button
                     variant="primary"
                     className="mt-3 w-100"
@@ -101,6 +103,7 @@ function App() {
                     label="Check-in Frequency (minutes)"
                     type="number"
                     placeholder="Enter frequency in minutes"
+                    name="frequency"
                     required
                   />
                   <Button
@@ -118,7 +121,10 @@ function App() {
             )}
           </>
         ) : (
-          <CheckIn onEndSession={handleEndSession} /> // Pass handleEndSession to CheckIn
+          <CheckIn
+            onEndSession={handleEndSession}
+            checkInFrequency={checkInFrequency}
+          /> // Pass frequency to CheckIn
         )}
       </div>
     </div>
