@@ -12,7 +12,7 @@ const CheckIn = () => {
   const handleCheckIn = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/check_user_in", {
+      const res = await fetch("http://127.0.0.1:8000/api/check_user_in", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
