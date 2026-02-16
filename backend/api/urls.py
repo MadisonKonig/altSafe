@@ -5,19 +5,23 @@ from .views import Home
 
 urlpatterns = [
     # TODO: use RESTful API best practices
+    path('registration/', views.register, name='index'),
+	path('verify_code/', views.verify_user_verification_number, name='index'),
+	
     path('get_user_data', views.get_user_data, name='index'),
-    # path('insert_user_data', views.insert_user_data, name='index'),
+    path('insert_user_data', views.insert_user_data, name='index'),
     path('delete_user_data', views.delete_user_data, name='index'),
     path('create_user_data', views.create_user_data, name='index'),
     path('check_user_in', views.check_user_in, name='index'),
     path('miss_user_check_in', views.miss_user_check_in, name='index'),
     # path('insert_user_verification_number', views.insert_user_verification_number, name='index'),
-    path('verify_user_verification_number', views.verify_user_verification_number, name='index'),
+    
     
     # JWT Authentication
     path('', Home.as_view()),
     #the front end can use this to refresh the token.
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+	path("dummy-jwt/", views.createDummyJwt, name="dummy-jwt"),
     path('end_user_session', views.end_user_session, name='index'),
     path('start_user_session', views.start_user_session, name='index'),
 ]
