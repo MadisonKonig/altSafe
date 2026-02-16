@@ -8,7 +8,7 @@ from rest_framework.exceptions import NotFound, APIException
 from rest_framework import status
 from django.conf import settings
 
-from backend.notify.services.queue import start_notify_scheduler
+from notify.services.queue import start_notify_scheduler
 
 #TODO: See what returning error codes does - does it exit the API altogether? 
 
@@ -18,16 +18,29 @@ def connect_to_database():
     client = MongoClient(uri, server_api=ServerApi('1'))
 
     database = client.get_database("cmd-f")
-    client.close()
+    # client.close()
     users = database.get_collection("users")
     return users
 
-def get_data(id):
-    users = connect_to_database()
+def get_data(users, id):
     query = { "_id": ObjectId(id) }
     user = users.find_one(query)
     user["_id"] = str(user["_id"])
     return user
+
+def insert_data(phone_number):
+    users = connect_to_database()
+    print(phone_number)
+    user = users.insert_one(
+        {
+            "phone_number":phone_number,
+            "is_verified":False
+        }
+    )
+    if user.acknowledged:
+        return 200
+    return 500
+
 
 def delete_data(id):
     users = connect_to_database()
@@ -38,19 +51,18 @@ def delete_data(id):
     except Exception as e:
             raise NotFound(str(e))
 
-def create_user(name, phone_number, emergency_contact_name, emergency_contact_phone_number):
-    users = connect_to_database()
+def check_user_in(users, phone_number):
+    query = { "phone_number": phone_number }
+    user = users.find_one(query)
+    if user:
+        return True
+    return False
+
+def create_user(users, phone_number, creation_code):
     user = users.insert_one(
     {
-        "name": name,
         "phone_number": phone_number,
-        "emergency_contacts": [
-            {
-            "contact_order": 1,
-            "name_id": emergency_contact_name,
-            "phone_number": emergency_contact_phone_number
-            }
-        ],
+        "creation_code": creation_code,
         "sessions": None,
         "is_verified": False
     })
@@ -64,12 +76,19 @@ def insert_verification_number(id, otp):
         return status.HTTP_200_OK
     return 500
 
-def verify_verification_number(id, verification_number):
+def verify_verification_number(users, id, verification_number):
     try:
-        users = connect_to_database()
         query = { "_id": ObjectId(id), "verification_number":verification_number }
         user = users.find_one(query)
         if verification_number == user.verification_number:
+            try:
+                query2 = { "_id": ObjectId(id) }
+                user = users.find_one_and_update(filter=query2, update=({'$set':{'is_verified':True}}))
+                user["_id"] = str(user["_id"])
+            except APIException as e:
+                return Response({"error": str(e)}, status=e.status_code)
+            except Exception as e:
+                return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             update_is_verified(id) 
             start_session(id, "", "", 1, 2)
             start_notify_scheduler(2, user.phone_number, id)
@@ -80,9 +99,19 @@ def verify_verification_number(id, verification_number):
     except Exception as e:
         return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-def update_is_verified(id):
+def update_verification_number(users, phone_number, creation_code):
     try:
-        users = connect_to_database()
+        query = { "phone_number": phone_number }
+        user = users.find_one_and_update(filter=query, update=({'$set':{'creation_code':creation_code}}))
+        user["_id"] = str(user["_id"])
+        return user
+    except APIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    except Exception as e:
+        return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+def update_is_verified(users, id):
+    try:
         query = { "_id": ObjectId(id) }
         user = users.find_one_and_update(filter=query, update=({'$set':{'is_verified':True}}))
         user["_id"] = str(user["_id"])

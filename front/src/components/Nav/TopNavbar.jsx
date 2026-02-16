@@ -67,7 +67,7 @@ export default function TopNavbar() {
                 smooth={true}
                 offset={-80}
               >
-                Projects
+                rojects
               </Link>
             </li>
             <li className="semiBold font15 pointer">

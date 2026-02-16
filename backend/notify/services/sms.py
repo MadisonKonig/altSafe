@@ -13,11 +13,11 @@ def send_sms(to, message):
 
     return settings.TWILIO_NUMBER
 
-def send_verification(user_id, to_number):
-    otp = f"{secrets.randbelow(100000):05d}"
-    message = f"Hello, your verification code is: {otp}"
+def send_verification(to_number, creation_code):
+    # otp = f"{secrets.randbelow(100000):05d}"
+    message = f"Hello, your verification code is: {creation_code}"
     send_sms(to_number, message)
-    insert_verification_number(user_id, otp)
+    # insert_verification_number(user_id, otp)
 
 def send_checkin(interval, destination, user_id): 
     from .queue import start_miss_scheduler
