@@ -41,7 +41,6 @@ def insert_data(phone_number):
         return 200
     return 500
 
-
 def delete_data(id):
     users = connect_to_database()
     query = { "_id": ObjectId(id) }
@@ -52,11 +51,7 @@ def delete_data(id):
             raise NotFound(str(e))
 
 def check_user_in(users, phone_number):
-    query = { "phone_number": phone_number }
-    user = users.find_one(query)
-    if user:
-        return True
-    return False
+    return users.find_one({ "phone_number": phone_number }) is not None
 
 def create_user(users, phone_number, creation_code):
     user = users.insert_one(
