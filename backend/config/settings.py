@@ -62,7 +62,7 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     # We will only do authentication with JWT
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'api.services.authenticate.UserAuthentication',
+        'api.authentication.JWTAuthentication',
     ),
     # This means that all API views require to be authenticated
     'DEFAULT_PERMISSION_CLASSES': (
@@ -93,7 +93,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:3000',
 ]
 
-ROOT_URLCONF = 'backend.urls'
+ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
     {
@@ -111,7 +111,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'backend.wsgi.application'
+WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database
