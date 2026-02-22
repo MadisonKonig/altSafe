@@ -1,23 +1,30 @@
-from rest_framework_simplejwt.views import TokenRefreshView
 from django.urls import path
-from . import views
+
+from api.views.auth import register, verify
+from api.views.users import get_user, delete_user_data
+from api.views.sessions import (
+	start_session,
+	end_session,
+	check_in,
+	missed_check_in
+)
 
 urlpatterns = [
 	#Auth
-	path('auth/register/', views.register, name='register'),
-	path('auth/verify/', views.verify_user_verification_number, name='verify'),
-	path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-	path("auth/token/dummy-jwt/", views.createDummyJwt, name="dummy-jwt"),
+	path('auth/register/', register, name='register'),
+	path('auth/verify/',verify, name='verify'),
+	# path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+	# path("auth/token/dummy-jwt/", views.createDummyJwt, name="dummy-jwt"),
 	
     # Users
-    path('users/me/', views.get_user_data, name='get_user_data'),
-	path('users/delete/', views.delete_user_data, name='delete_user_data'),
+    path('user/', get_user, name='get_user_data'),
+	path('user/delete/', delete_user_data, name='delete_user_data'),
 	
     # Sessions
-    path('sessions/start/', views.start_user_session, name='start_session'),
-	path('sessions/end/', views.end_user_session, name='end_session'),
-	path('sessions/check_in/', views.check_user_in, name='check_in'),
-	path('sessions/miss_check_in/', views.miss_user_check_in, name='miss_check_in'),
+    path('session/start/', start_session, name='start_session'),
+	path('session/end/', end_session, name='end_session'),
+	path('session/check_in/', check_in, name='check_in'),
+	path('session/miss_check_in/', missed_check_in, name='miss_check_in'),
     
     # insert happens when register happens, so we can just call create_user_data in the register view and not have an endpoint for it.
     # path('insert_user_data', views.insert_user_data, name='index'),
