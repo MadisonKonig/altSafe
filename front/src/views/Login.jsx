@@ -8,24 +8,36 @@ const Login = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [step, setStep] = useState(1); // 1: enter phone number, 2: enter verification code
-  const [userId, setUserId] = useState(null);
 
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+
+    if (!phoneNumber || !phoneRegex.test(phoneNumber)){
+      toast("Please enter a valid phone number.")
+      return;
+    }
+
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/registration/", {
+      const res = await fetch("http://localhost:8000/api/auth/register/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone_number: phoneNumber }),
       });
 
+      if(!res.ok){
+        throw new Error(`Server returned status ${res.status}`)
+      } else {
+        toast("Sending text successful!");
+        setStep(2);
+      }
+
       const data = await res.json();
       console.log("User: ", data);
-      toast("Sending text successful!");
-      setStep(2);
+      
 
       // 로그인 성공 후 체크인 페이지로 이동
       // navigate("/VerificationCode"); // checkin 페이지로 이동
@@ -36,13 +48,16 @@ const Login = () => {
   };
 
   const handleVerifyCode = async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
+
+
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/verify_code/", {
+      const res = await fetch("http://localhost:8000/api/auth/verify/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: userId, verification_code: verificationCode }),
+        body: JSON.stringify({ phone_number: phoneNumber, verification_code: verificationCode }),
+        credentials: 'include',
       });
 
       const data = await res.json();
@@ -51,8 +66,13 @@ const Login = () => {
       console.log("Verification: ", data);
       toast("Verification successful!");
 
+      if (data.success){
+        //TODO: add tokens to cookies, set phone number
+        navigate("/checkin");
+      }
+
       // 로그인 성공 후 체크인 페이지로 이동
-      navigate("/checkin");
+      
     } catch (error) {
       console.error("Verification failed:", error);
       toast("Verification Failed. Please try again.");
