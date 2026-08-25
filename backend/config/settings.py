@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Twilio tokens
@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
-	'corsheaders',
+    'corsheaders',
     'api',
 ]
 
@@ -67,8 +67,11 @@ REST_FRAMEWORK = {
     # This means that all API views require to be authenticated
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
-    )
+    ),
     # permission_classes = [AllowAny] in a view class to allow anybody to access this view
+    'DEFAULT_THROTTLE_RATES': {
+		'anon': '5/minute',
+    }
 }
 
 SIMPLE_JWT = {
@@ -85,13 +88,15 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-	'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 CORS_ALLOWED_ORIGINS = [
-	'http://localhost:3000',
+    'http://localhost:3000',
     'http://127.0.0.1:3000',
 ]
+
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'config.urls'
 

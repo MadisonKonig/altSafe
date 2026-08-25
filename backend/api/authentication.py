@@ -2,22 +2,15 @@ from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import AccessToken
 
-
+# from bson.objectid import ObjectId
+# from backend.database.client import users_collection
 class JWTAuthentication(BaseAuthentication):
 
     def authenticate(self, request):
-        auth_header = request.headers.get("Authorization")
+        token = request.COOKIES.get("access_token")
 
-        if not auth_header:
-            return None  # No token provided
-
-        try:
-            prefix, token = auth_header.split(" ")
-        except ValueError:
-            raise AuthenticationFailed("Invalid Authorization header format")
-
-        if prefix.lower() != "bearer":
-            raise AuthenticationFailed("Invalid token prefix")
+        if not token:
+            return None
 
         try:
             decoded = AccessToken(token)
@@ -29,8 +22,6 @@ class JWTAuthentication(BaseAuthentication):
         except Exception:
             raise AuthenticationFailed("Invalid or expired token")
 
-        # Attach user_id to request
         request.user_id = user_id
 
-        # DRF expects a tuple (user, auth)
         return (None, token)

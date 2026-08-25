@@ -4,20 +4,19 @@ import TopNavbar from "../components/Nav/TopNavbar";
 import FullButton from "../components/Buttons/FullButton";
 
 const CheckIn = () => {
-  const [yourPhone, setYourPhone] = useState(""); // 본인 번호
-  const [receiverPhone, setReceiverPhone] = useState(""); // 문자를 받을 사람 번호
+  const [emergencyPhone, setEmergencyPhone] = useState(""); // 문자를 받을 사람 번호
   const [intervalTime, setIntervalTime] = useState(""); // 체크인 주기 (분)
   const [isCheckedIn, setIsCheckedIn] = useState(false);
 
   const handleCheckIn = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/check_user_in", {
+      const res = await fetch("http://localhost:8000/api/session/start/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          your_phone: yourPhone,
-          receiver_phone: receiverPhone,
+          //TODO: add phone number for lookup from cookies
+          emergency_phone: emergencyPhone,
           interval_time: intervalTime,
         }),
       });
@@ -42,7 +41,7 @@ const CheckIn = () => {
       <Wrapper>
         <div className="container">
           <HeaderInfo>
-            <h1 className="font40 extraBold">Check In</h1>
+            <h1 className="font40 extraBold">Session Info</h1>
           </HeaderInfo>
           <div className="" style={{ paddingBottom: "30px" }}>
             <div className="">
@@ -51,35 +50,21 @@ const CheckIn = () => {
                   {isCheckedIn ? (
                     <p>You have successfully checked in!</p>
                   ) : (
-                    <p>Please enter the information below to check in.</p>
+                    <p>Please enter the information below to start a session.</p>
                   )}
                 </CheckInMessage>
 
-                {/* 본인 번호 입력 */}
                 <InputWrapper>
-                  <label>Your Phone Number</label>
+                  <label>Emergency Contact's Phone Number</label>
                   <input
                     type="tel"
-                    value={yourPhone}
-                    onChange={(e) => setYourPhone(e.target.value)}
+                    value={emergencyPhone}
+                    onChange={(e) => setEmergencyPhone(e.target.value)}
                     required
-                    placeholder="Enter your phone number"
+                    placeholder="Enter emergency contact's phone number"
                   />
                 </InputWrapper>
 
-                {/* 문자를 받을 사람 번호 입력 */}
-                <InputWrapper>
-                  <label>Receiver's Phone Number</label>
-                  <input
-                    type="tel"
-                    value={receiverPhone}
-                    onChange={(e) => setReceiverPhone(e.target.value)}
-                    required
-                    placeholder="Enter receiver's phone number"
-                  />
-                </InputWrapper>
-
-                {/* 체크인 주기 입력 */}
                 <InputWrapper>
                   <label>Interval Time (in minutes)</label>
                   <input
