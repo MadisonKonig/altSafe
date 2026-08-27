@@ -7,3 +7,4 @@ client = MongoClient(
 
 db = client.get_database("cmd-f")
 users_collection = db.get_collection("users")
+sessions_collection = db.get_collection("sessions")

@@ -16,7 +16,7 @@ def create_user(phone_number, code):
     {
         "phone_number": phone_number,
         "verification_number": code,
-        "sessions": None,
+        "has_active_session": False,
         "is_verified": False
     })
     return str(result.inserted_id)
@@ -34,4 +34,10 @@ def update_is_verified(phone_number):
    return users_collection.update_one(
         {"phone_number": phone_number},
         {"$set": {"is_verified": True}}
+    )
+
+def clear_verification_code(phone_number):
+    return users_collection.update_one(
+        {"phone_number": phone_number},
+        {"$set": {"verification_number": None}}
     )

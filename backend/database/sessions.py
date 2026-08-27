@@ -1,6 +1,6 @@
 from bson import ObjectId
-from datetime import datetime
-from .client import users_collection
+from datetime import datetime, timezone
+from .client import users_collection, sessions_collection
 
 
 # -----------------------------
@@ -8,25 +8,25 @@ from .client import users_collection
 # -----------------------------
 
 def get_active_session(user_id):
-    user = users_collection.find_one(
+    return users_collection.find_one(
         {"_id": ObjectId(user_id)},
-        {"sessions": 1}
+        {"has_active_session": True}
     )
 
-    if not user or "sessions" not in user:
-        return None
-    
-    for session in user["sessions"]:
-        if session.get("active"):
-            return session
-    return None
+def get_session(user_id, session_id):
+    return sessions_collection.find_one({
+        "_id": ObjectId(session_id), 
+        "user_id": ObjectId(user_id) 
+    })
+
 
 def start_session(user_id, threshold, freq, emergency_contact):
     session_id = ObjectId()  # Generate unique session ID
     session_doc = {
         "_id": session_id,
+        "user_id": ObjectId(user_id),
         "active": True,
-        "started_at": datetime.utcnow(),
+        "started_at": datetime.now(timezone.utc),
         "ended_at": None,
         "check_ins": [],
         "check_ins_missed": 0,
@@ -35,46 +35,68 @@ def start_session(user_id, threshold, freq, emergency_contact):
         "emergency_contacts": emergency_contact
     }
 
+    sessions_collection.insert_one(session_doc)
+
     users_collection.update_one(
         { "_id": ObjectId(user_id) },
-        { "$push": { "sessions": session_doc } }
+        { "$set": { "has_active_session": True } }
     )
 
     return str(session_id)
 
 def end_session(user_id, session_id):
-    return users_collection.update_one(
-        { "_id": ObjectId(user_id), "sessions._id": ObjectId(session_id) },
-        { "$set": { "sessions.$.ended_at": datetime.utcnow(), "sessions.$.active": False } }
+    users_collection.update_one(
+        {"_id": ObjectId(session_id)}, 
+        {"$set":{"has_active_session":False}}
     )
 
-
+    return sessions_collection.update_one(
+        {   
+            "_id": ObjectId(session_id), 
+            "user_id": ObjectId(user_id),
+            "active": True 
+        },
+        { 
+            "$set": { 
+                "ended_at": datetime.now(timezone.utc), 
+                "active": False
+            }
+        }
+    )
 
 def add_check_in(user_id, session_id, location, notes):
-    return users_collection.update_one(
-        { "_id": ObjectId(user_id), "sessions._id": ObjectId(session_id) },
+    return sessions_collection.update_one(
+        { 
+            "_id": ObjectId(session_id), 
+            "user_id": ObjectId(user_id),
+            "active": True
+        },
         { 
             "$push": { 
-                "sessions.$.check_ins": {
-                    "timestamp": datetime.utcnow(),
+                "check_ins": {
+                    "timestamp": datetime.now(timezone.utc),
                     "location": location,
                     "notes": notes
                 }
             },
             "$set": {
-                "sessions.$.check_ins_missed": 0
+                "check_ins_missed": 0
             }
         }
     )
 
 def increment_missed(user_id, session_id):
-    users_collection.update_one(
-        { "_id": ObjectId(user_id), "sessions._id": ObjectId(session_id) },
+    result = sessions_collection.update_one(
+        { 
+            "_id": ObjectId(session_id), 
+            "user_id": ObjectId(user_id),
+            "active": True
+        },
         { 
             "$inc": { 
-                "sessions.$.check_ins_missed": 1
+                "check_ins_missed": 1
             }
         }
     )
 
-    return get_active_session(user_id)
+    return result

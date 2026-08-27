@@ -6,7 +6,7 @@ from api.views.sessions import (
     start_session,
     end_session,
     check_in,
-    missed_check_in
+    missed_check_in,
 )
 
 urlpatterns = [

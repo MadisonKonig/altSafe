@@ -1,6 +1,6 @@
 import secrets
 from core.jwt import create_tokens
-from database.users import create_user, update_is_verified, get_user_by_phone_number, set_verification_code
+from database.users import create_user, update_is_verified, get_user_by_phone_number, set_verification_code, clear_verification_code
 from services.sms import send_sms
 
 # should handle register and verification of users
@@ -31,7 +31,7 @@ def verify_user(phone_number, verification_number):
         return None
     
     update_is_verified(phone_number)
-    #clear_verification_code(phone_number) 
+    clear_verification_code(phone_number) 
     # this is optional, but it can help prevent confusion if the user tries to verify again with the same code.
 
     tokens = create_tokens(str(user["_id"]))
